@@ -35,8 +35,12 @@ export class UserService {
     return this.userModel.find().select('-password').exec();
   }
 
-  async getUserByUserName(userName: string): Promise<User | null> {
-    return this.userModel.findOne({ userName }).select('-password').exec();
+  async getUserByUserName(userName: string): Promise<User> {
+    const user = await this.userModel.findOne({ userName }).select('-password').exec();
+    if (!user){
+        throw new Error('Not found user')
+    }
+    return user;
   }
 
 

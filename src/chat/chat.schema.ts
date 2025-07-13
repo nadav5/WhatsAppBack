@@ -5,6 +5,7 @@ export type ChatDocument = Chat & Document;
 
 @Schema()
 export class Chat {
+
   @Prop()
   name: string;
 

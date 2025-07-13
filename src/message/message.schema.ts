@@ -8,8 +8,8 @@ export class Message {
   @Prop({ required: true })
   content: string;
 
-  @Prop({ type: [String], ref: 'User', required: true })
-  sender: string[];
+  @Prop({ type: String, ref: 'User', required: true })
+  sender: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Chat', required: true })
   chatId: Types.ObjectId;
