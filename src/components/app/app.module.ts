@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserModule } from './user/user.module';
-import { MessageModule } from './message/message.module';
-import { ChatModule } from './chat/chat.module';
+import { MessageModule } from '../message/message.module';
+import { UserModule } from '../user/user.module';
+import { ChatModule } from '../chat/chat.module';
+
 
 @Module({
   imports: [

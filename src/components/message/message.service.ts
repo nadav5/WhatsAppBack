@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message, MessageDocument } from './message.schema';
-import { Chat, ChatDocument } from 'src/chat/chat.schema';
 import { timestamp } from 'rxjs';
+import { Chat, ChatDocument } from '../chat/chat.schema';
 
 @Injectable()
 export class MessageService {
