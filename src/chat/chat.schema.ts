@@ -15,7 +15,7 @@ export class Chat {
   @Prop({ required: true })
   isGroup: boolean;
 
-  @Prop({ type: [{ type: [String], ref: 'User' }], required: true })
+  @Prop({ type: [{ type: [String] }], required: true })
   members: string[];
 
   @Prop({ type: Date, default: Date.now })

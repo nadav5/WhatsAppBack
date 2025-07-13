@@ -11,10 +11,10 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ type: [{ type: [String], ref: 'Chat' }], default: [] })
+  @Prop({ type: [{ type: [String] }], default: [] })
   groups: string[];
 
-  @Prop({ type: [{ type: [String], ref: 'User' }], default: [] })
+  @Prop({ type: [{ type: [String] }], default: [] })
   contacts: string[];
 }
 
