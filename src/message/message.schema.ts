@@ -8,8 +8,8 @@ export class Message {
   @Prop({ required: true })
   content: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  sender: Types.ObjectId;
+  @Prop({ type: [String], ref: 'User', required: true })
+  sender: string[];
 
   @Prop({ type: Types.ObjectId, ref: 'Chat', required: true })
   chatId: Types.ObjectId;
@@ -17,3 +17,5 @@ export class Message {
   @Prop({ type: Date, default: Date.now })
   timestamp: Date;
 }
+
+export const MessageSchema = SchemaFactory.createForClass(Message);

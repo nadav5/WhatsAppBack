@@ -14,9 +14,11 @@ export class Chat {
   @Prop({ required: true })
   isGroup: boolean;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], required: true })
-  members: Types.ObjectId[];
+  @Prop({ type: [{ type: [String], ref: 'User' }], required: true })
+  members: string[];
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 }
+
+export const ChatSchema = SchemaFactory.createForClass(Chat);
