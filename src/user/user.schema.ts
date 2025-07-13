@@ -16,8 +16,7 @@ export class User {
 
   @Prop({ type: [String], default: [] })
   contacts: string[];
-
-  //egwגכגכג
+//ffedfweewfew
 
 }
 
