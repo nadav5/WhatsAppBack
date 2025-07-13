@@ -38,12 +38,12 @@ export class MessageService {
     return newMessage.save();
   }
 
-  public async getMessagesByChatId(chatId: string) {
+  public async getMessagesByChatId(chatId: string): Promise<Message[]> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
       throw new Error('Chat not found');
     }
-    this.messageModel.find({ chatId }).sort({ timestamp: 1 }).exec();
+    return this.messageModel.find({ chatId }).sort({ timestamp: 1 }).exec();
   }
 
   public async getMessageById(messageId: string): Promise<Message> {

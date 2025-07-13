@@ -36,7 +36,7 @@ export class UserService {
   }
 
   async getUserByUserName(userName: string): Promise<User> {
-    const user = await this.userModel.findOne({ userName }).select('-password').exec();
+    const user = await this.userModel.findOne({ userName }, {password: 0}).select('-password').exec();
     if (!user){
         throw new Error('Not found user')
     }
