@@ -1,17 +1,28 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.schema';
+import { CreateUserDto } from './dto/create-user.dto';
+import { AddContactDto } from './dto/add-contact.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async createUser(
-    @Body('userName') userName: string,
-    @Body('password') password: string,
-  ): Promise<User> {
-    return this.userService.createUser(userName, password);
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.userService.createUser(
+      createUserDto.userName,
+      createUserDto.password,
+    );
   }
 
   @Get()
@@ -20,34 +31,36 @@ export class UserController {
   }
 
   @Get(':userName')
-  async getUserByUserName(
-    @Param('userName') userName: string,
-  ): Promise<User> {
+  async getUserByUserName(@Param('userName') userName: string): Promise<User> {
     return this.userService.getUserByUserName(userName);
   }
 
   @Put('add-contact')
-  async addContactToUser(
-    @Body('userName') userName: string,
-    @Body('contactUserName') contactUserName: string,
-  ): Promise<User> {
-    return this.userService.addContactToUser(userName, contactUserName);
+  async addContactToUser(@Body() addContactDto: AddContactDto): Promise<User> {
+    return this.userService.addContactToUser(
+      addContactDto.userName,
+      addContactDto.contactUserName,
+    );
   }
 
   @Put('remove-contact')
   async removeContactFromUser(
-    @Body('userName') userName: string,
-    @Body('contactUserName') contactUserName: string,
+    @Body() addContactDto: AddContactDto,
   ): Promise<User> {
-    return this.userService.removeContactFromUser(userName, contactUserName);
+    return this.userService.removeContactFromUser(
+      addContactDto.userName,
+      addContactDto.contactUserName,
+    );
   }
 
   @Put('update-password')
   async updateUserPassword(
-    @Body('userName') userName: string,
-    @Body('newPassword') newPassword: string,
+    @Body() updatePasswordDto: UpdatePasswordDto,
   ): Promise<User> {
-    return this.userService.updateUserPassword(userName, newPassword);
+    return this.userService.updateUserPassword(
+      updatePasswordDto.userName,
+      updatePasswordDto.newPassword,
+    );
   }
 
   @Delete(':userName')
