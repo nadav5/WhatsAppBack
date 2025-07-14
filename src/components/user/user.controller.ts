@@ -13,7 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AddContactDto } from './dto/add-contact.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UserRO } from './ro/user.ro';
-import { GroupInUser } from './dto/group-in-user.dto';
+import { ChatInUser } from './dto/chat-in-user.dto';
 
 
 @Controller('users')
@@ -81,12 +81,12 @@ export class UserController {
   }
 
   @Post('add-group-to-user')
-  public async addGroupToUser(@Body() groupInUser:GroupInUser): Promise<User>{
-    return this.userService.addGroupToUser(groupInUser.userName,groupInUser.groupId);
+  public async addGroupToUser(@Body() chatInUser:ChatInUser): Promise<User>{
+    return this.userService.addGroupToUser(chatInUser.userName,chatInUser.chatId);
   }
 
   @Delete('remove-group-to-user')
-  public async removeGroupFromUser(@Body() groupInUser:GroupInUser): Promise<User>{
-    return this.userService.removeGroupFromUser(groupInUser.userName,groupInUser.groupId);
+  public async removeGroupFromUser(@Body() chatInUser:ChatInUser): Promise<User>{
+    return this.userService.removeGroupFromUser(chatInUser.userName,chatInUser.chatId);
   }
 }

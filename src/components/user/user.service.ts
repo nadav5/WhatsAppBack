@@ -7,12 +7,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import { UserRO } from './ro/user.ro';
+import { Chat, ChatDocument } from '../chat/chat.schema';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(Chat.name)
+    private chatModel: Model<ChatDocument>,
   ) {}
 
   public async createUser(userName: string, password: string): Promise<User> {
@@ -126,39 +129,48 @@ export class UserService {
     return { success: true, user: user.userName };
   }
 
-  async addGroupToUser(userName: string, chatId: string): Promise<User> {
+  public async addGroupToUser(userName: string, chatId: string): Promise<User> {
     const user = await this.userModel.findOne({ userName }).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const groupObjectId = new mongoose.Types.ObjectId(chatId);
 
-    if (user.chats.some((g) => g.equals(groupObjectId))) {
-      throw new ConflictException('Group already added');
+    const chat = await this.chatModel.findById(chatId).exec();
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
     }
-    user.chats.push(groupObjectId);
+
+    const chatObjectId = new mongoose.Types.ObjectId(chatId);
+    if (user.chats.some((g) => g.equals(chatObjectId))) {
+      throw new ConflictException('Chat already added');
+    }
+
+    user.chats.push(chatObjectId);
     return user.save();
   }
 
-
-
-  async removeGroupFromUser(userName: string, chatId: string): Promise<User> {
+  public async removeGroupFromUser(
+    userName: string,
+    chatId: string,
+  ): Promise<User> {
     const user = await this.userModel.findOne({ userName }).exec();
-
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const groupObjectId = new mongoose.Types.ObjectId(chatId);
-    const exists = user.chats.some(
-      (g) => g.toString() === groupObjectId.toString(),
-    );
+
+    const chat = await this.chatModel.findById(chatId).exec();
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    const chatObjectId = new mongoose.Types.ObjectId(chatId);
+    const exists = user.chats.some((g) => g.equals(chatObjectId));
 
     if (!exists) {
-      throw new NotFoundException('Group not found in user groups');
+      throw new NotFoundException('Chat not found in user chats');
     }
-    user.chats = user.chats.filter(
-      (g) => g.toString() !== groupObjectId.toString(),
-    );
+
+    user.chats = user.chats.filter((g) => !g.equals(chatObjectId));
     return user.save();
   }
 }

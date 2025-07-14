@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, MinLength } from 'class-validator';
 
-export class GroupInUser {
+export class ChatInUser {
   @IsString()
   @IsNotEmpty()
   userName: string;
@@ -8,5 +8,5 @@ export class GroupInUser {
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
-  groupId: string;
+  chatId: string;
 }
