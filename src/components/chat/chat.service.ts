@@ -29,7 +29,10 @@ export class ChatService {
     return this.chatModel.find({ members: userName }).exec();
   }
 
-  public async addMemberToGroup(chatId: string, userName: string): Promise<Chat> {
+  public async addMemberToGroup(
+    chatId: string,
+    userName: string,
+  ): Promise<Chat> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
       throw new Error('Chat not found');
@@ -47,7 +50,10 @@ export class ChatService {
     return chat.save();
   }
 
-  public async removeMemberFromGroup(chatId: string, userName: string): Promise<Chat> {
+  public async removeMemberFromGroup(
+    chatId: string,
+    userName: string,
+  ): Promise<Chat> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
       throw new Error('Chat not found');
@@ -73,12 +79,15 @@ export class ChatService {
     return { deleted: true };
   }
 
-  public async getChatById(chatId: string): Promise<Chat>{
-    const chat= await this.chatModel.findById(chatId).exec();
-    if(!chat){
-        throw new Error('Chat not found');
+  public async getChatById(chatId: string): Promise<Chat> {
+    const chat = await this.chatModel.findById(chatId).exec();
+    if (!chat) {
+      throw new Error('Chat not found');
     }
     return chat;
   }
 
+  public async getAllChats(): Promise<Chat[]> {
+    return this.chatModel.find().exec();
+  }
 }

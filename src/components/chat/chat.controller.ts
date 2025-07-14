@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Chat } from './chat.schema';
 import { CreateChatDto } from './dto/create-chat.dto';
@@ -8,6 +16,11 @@ import { UpdateMembersDto } from './dto/update-members.dto';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @Get()
+  async getAllChats(): Promise<Chat[]> {
+    return this.chatService.getAllChats();
+  }
+
   @Post()
   async createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
     const { name, isGroup, members } = createChatDto;
@@ -15,7 +28,9 @@ export class ChatController {
   }
 
   @Get('by-user/:userName')
-  async getAllChatsForUser(@Param('userName') userName: string): Promise<Chat[]> {
+  async getAllChatsForUser(
+    @Param('userName') userName: string,
+  ): Promise<Chat[]> {
     return this.chatService.getAllChatsForUser(userName);
   }
 
@@ -32,11 +47,16 @@ export class ChatController {
     @Param('chatId') chatId: string,
     @Body() updateMembersDto: UpdateMembersDto,
   ): Promise<Chat> {
-    return this.chatService.removeMemberFromGroup(chatId, updateMembersDto.userName);
+    return this.chatService.removeMemberFromGroup(
+      chatId,
+      updateMembersDto.userName,
+    );
   }
 
   @Delete(':chatId')
-  async deleteChat(@Param('chatId') chatId: string): Promise<{ deleted: boolean }> {
+  async deleteChat(
+    @Param('chatId') chatId: string,
+  ): Promise<{ deleted: boolean }> {
     return this.chatService.deleteChat(chatId);
   }
 
