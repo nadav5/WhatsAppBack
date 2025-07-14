@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message, MessageDocument } from './message.schema';
-import { timestamp } from 'rxjs';
 import { Chat, ChatDocument } from '../chat/chat.schema';
 
 @Injectable()
@@ -21,11 +25,11 @@ export class MessageService {
   ): Promise<Message> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('Chat not found');
     }
 
     if (!chat.members.includes(senderUserName)) {
-      throw new Error('User is not a member of this chat');
+      throw new ForbiddenException('User is not a member of this chat');
     }
 
     const newMessage = new this.messageModel({
@@ -41,7 +45,7 @@ export class MessageService {
   public async getMessagesByChatId(chatId: string): Promise<Message[]> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('Chat not found');
     }
     return this.messageModel.find({ chatId }).sort({ timestamp: 1 }).exec();
   }
@@ -49,7 +53,7 @@ export class MessageService {
   public async getMessageById(messageId: string): Promise<Message> {
     const message = await this.messageModel.findById(messageId).exec();
     if (!message) {
-      throw new Error('message not found');
+      throw new NotFoundException('Message not found');
     }
     return message;
   }
@@ -61,17 +65,17 @@ export class MessageService {
     const message = await this.messageModel.findById(messageId).exec();
 
     if (!message) {
-      throw new Error('Message not found');
+      throw new NotFoundException('Message not found');
     }
 
     if (message.sender !== senderUserName) {
-      throw new Error('You are not the sender of this message');
+      throw new ForbiddenException('You are not the sender of this message');
     }
 
     const result = await this.messageModel.deleteOne({ _id: messageId }).exec();
 
     if (result.deletedCount === 0) {
-      throw new Error('Failed to delete message');
+      throw new BadRequestException('Failed to delete message');
     }
 
     return { deleted: true };
@@ -84,7 +88,7 @@ export class MessageService {
       .exec();
 
     if (!lastMessage) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('No messages found in this chat');
     }
     return lastMessage;
   }

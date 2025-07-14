@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Chat, ChatDocument } from './chat.schema';
@@ -35,15 +40,15 @@ export class ChatService {
   ): Promise<Chat> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('Chat not found');
     }
 
     if (!chat.isGroup) {
-      throw new Error('Cannot add members to a private chat');
+      throw new BadRequestException('Cannot add members to a private chat');
     }
 
     if (chat.members.includes(userName)) {
-      throw new Error('User is already a member of this group');
+      throw new ConflictException('User is already a member of this group');
     }
 
     chat.members.push(userName);
@@ -56,15 +61,15 @@ export class ChatService {
   ): Promise<Chat> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('Chat not found');
     }
 
     if (!chat.isGroup) {
-      throw new Error('Cannot add members to a private chat');
+      throw new BadRequestException('Cannot remove members from a private chat');
     }
 
     if (!chat.members.includes(userName)) {
-      throw new Error('User is not a member of this group');
+      throw new NotFoundException('User is not a member of this group');
     }
 
     chat.members = chat.members.filter((c) => c !== userName);
@@ -74,7 +79,7 @@ export class ChatService {
   public async deleteChat(chatId: string): Promise<{ deleted: boolean }> {
     const result = await this.chatModel.deleteOne({ _id: chatId }).exec();
     if (result.deletedCount === 0) {
-      throw new Error('Chat not found or already deleted');
+      throw new NotFoundException('Chat not found or already deleted');
     }
     return { deleted: true };
   }
@@ -82,7 +87,7 @@ export class ChatService {
   public async getChatById(chatId: string): Promise<Chat> {
     const chat = await this.chatModel.findById(chatId).exec();
     if (!chat) {
-      throw new Error('Chat not found');
+      throw new NotFoundException('Chat not found');
     }
     return chat;
   }

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
+import { UserRO } from './ro/user.ro';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,8 @@ export class UserService {
   public async createUser(userName: string, password: string): Promise<User> {
     const existingUser = await this.userModel.findOne({ userName });
     if (existingUser) {
-      throw new Error('Username already exists');
+      //throw new Error('Username already exists');
+      throw new ConflictException('Username already exists');
     }
 
     const newUser = new this.userModel({
@@ -38,7 +40,8 @@ export class UserService {
   async getUserByUserName(userName: string): Promise<User> {
     const user = await this.userModel.findOne({ userName }, {password: 0}).select('-password').exec();
     if (!user){
-        throw new Error('Not found user')
+        //throw new Error('Not found user')
+        throw new NotFoundException('Not found user');
     }
     return user;
   }
@@ -50,11 +53,13 @@ export class UserService {
     const contact = await this.userModel.findOne({ userName: contactUserName }).exec();
 
     if (!user || !contact) {
-      throw new Error('User or contact not found');
+      //throw new Error('User or contact not found');
+      throw new NotFoundException('User or contact not found')
     }
 
     if (user.contacts.includes(contact.userName)) {
-      throw new Error('Contact already added');
+      //throw new Error('Contact already added');
+      throw new ConflictException('Contact already added');
     }
 
     user.contacts.push(contact.userName);
@@ -67,11 +72,13 @@ export class UserService {
     const contact = await this.userModel.findOne({ userName: contactUserName }).exec();
 
     if (!user || !contact) {
-      throw new Error('User or contact not found');
+      //throw new Error('User or contact not found');
+      throw new NotFoundException('User or contact not found');
     }
 
     if (!user.contacts.includes(contact.userName)) {
-      throw new Error('User not in contact ');
+      //throw new Error('User not in contact ');
+      throw new NotFoundException('User not in contact');
     }
 
     user.contacts = user.contacts.filter(c => c !== contact.userName);
@@ -82,7 +89,8 @@ export class UserService {
   const user = await this.userModel.findOne({ userName }).exec();
 
   if (!user) {
-    throw new Error('User not found');
+    //throw new Error('User not found');
+    throw new NotFoundException('User not found');
   }
 
   user.password = newPassword;
@@ -93,10 +101,25 @@ async deleteUser(userName: string): Promise<{ deleted: boolean }> {
   const result = await this.userModel.deleteOne({ userName }).exec();
 
   if (result.deletedCount === 0) {
-    throw new Error('User not found or already deleted');
+    //throw new Error('User not found or already deleted');
+    throw new NotFoundException('User not found or already deleted');
   }
 
   return { deleted: true };
+}
+
+public async login(userName: string, password: string): Promise<UserRO> {
+  const user = await this.userModel.findOne({ userName }).exec();
+
+  if (!user) {
+    return { success: false };
+  }
+
+  if (user.password !== password) {
+    return { success: false };
+  }
+
+  return { success: true, user: user.userName };
 }
 
 

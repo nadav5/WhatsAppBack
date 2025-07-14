@@ -10,28 +10,28 @@ export class MessageController {
 
   
   @Post()
-  async createMessage(
+  public async createMessage(
     @Body() createMessageDto: CreateMessageDto
   ): Promise<Message> {
     return this.messageService.createMessage(createMessageDto.chatId, createMessageDto.senderUserName, createMessageDto.content);
   }
 
   @Get('by-chat/:chatId')
-  async getMessagesByChatId(
+  public async getMessagesByChatId(
     @Param('chatId') chatId: string,
   ): Promise<Message[]> {
     return this.messageService.getMessagesByChatId(chatId);
   }
 
   @Get(':messageId')
-  async getMessageById(
+  public async getMessageById(
     @Param('messageId') messageId: string,
   ): Promise<Message> {
     return this.messageService.getMessageById(messageId);
   }
 
   @Delete(':messageId')
-  async deleteMessage(
+  public async deleteMessage(
     @Param('messageId') messageId: string,
     @Query('senderUserName') senderUserName: string,
   ): Promise<{ deleted: boolean }> {
@@ -39,9 +39,11 @@ export class MessageController {
   }
 
   @Get('last/:chatId')
-  async getLastMessageOfChat(
+  public async getLastMessageOfChat(
     @Param('chatId') chatId: string,
   ): Promise<Message> {
     return this.messageService.getLastMessageOfChat(chatId);
   }
+
+  
 }

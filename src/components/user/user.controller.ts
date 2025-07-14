@@ -12,6 +12,8 @@ import { User } from './user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AddContactDto } from './dto/add-contact.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UserRO } from './ro/user.ro';
+
 
 @Controller('users')
 export class UserController {
@@ -68,5 +70,12 @@ export class UserController {
     @Param('userName') userName: string,
   ): Promise<{ deleted: boolean }> {
     return this.userService.deleteUser(userName);
+  }
+
+  @Post('login')
+  async login(
+    @Body() loginDto: CreateUserDto,
+  ): Promise<UserRO> {
+    return this.userService.login(loginDto.userName, loginDto.password);
   }
 }
