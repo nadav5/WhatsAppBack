@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
+import { Chat } from '../chat/chat.schema';
 
 export type UserDocument = User & Document;
 
@@ -11,8 +12,8 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ type: [{ type: [String] }], default: [] })
-  groups: string[];
+  @Prop({ type: [mongoose.Types.ObjectId], ref: 'Chat' })
+  chats: mongoose.Types.ObjectId[];
 
   @Prop({ type: [{ type: [String] }], default: [] })
   contacts: string[];

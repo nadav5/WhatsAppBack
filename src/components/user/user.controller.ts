@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AddContactDto } from './dto/add-contact.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UserRO } from './ro/user.ro';
+import { GroupInUser } from './dto/group-in-user.dto';
 
 
 @Controller('users')
@@ -20,7 +21,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+  public async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.userService.createUser(
       createUserDto.userName,
       createUserDto.password,
@@ -28,17 +29,17 @@ export class UserController {
   }
 
   @Get()
-  async getAllUsers(): Promise<User[]> {
+  public async getAllUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
 
   @Get(':userName')
-  async getUserByUserName(@Param('userName') userName: string): Promise<User> {
+  public async getUserByUserName(@Param('userName') userName: string): Promise<User> {
     return this.userService.getUserByUserName(userName);
   }
 
   @Put('add-contact')
-  async addContactToUser(@Body() addContactDto: AddContactDto): Promise<User> {
+  public async addContactToUser(@Body() addContactDto: AddContactDto): Promise<User> {
     return this.userService.addContactToUser(
       addContactDto.userName,
       addContactDto.contactUserName,
@@ -46,7 +47,7 @@ export class UserController {
   }
 
   @Put('remove-contact')
-  async removeContactFromUser(
+  public async removeContactFromUser(
     @Body() addContactDto: AddContactDto,
   ): Promise<User> {
     return this.userService.removeContactFromUser(
@@ -56,7 +57,7 @@ export class UserController {
   }
 
   @Put('update-password')
-  async updateUserPassword(
+  public async updateUserPassword(
     @Body() updatePasswordDto: UpdatePasswordDto,
   ): Promise<User> {
     return this.userService.updateUserPassword(
@@ -66,16 +67,26 @@ export class UserController {
   }
 
   @Delete(':userName')
-  async deleteUser(
+  public async deleteUser(
     @Param('userName') userName: string,
   ): Promise<{ deleted: boolean }> {
     return this.userService.deleteUser(userName);
   }
 
   @Post('login')
-  async login(
+  public async login(
     @Body() loginDto: CreateUserDto,
   ): Promise<UserRO> {
     return this.userService.login(loginDto.userName, loginDto.password);
+  }
+
+  @Post('add-group-to-user')
+  public async addGroupToUser(@Body() groupInUser:GroupInUser): Promise<User>{
+    return this.userService.addGroupToUser(groupInUser.userName,groupInUser.groupId);
+  }
+
+  @Delete('remove-group-to-user')
+  public async removeGroupFromUser(@Body() groupInUser:GroupInUser): Promise<User>{
+    return this.userService.removeGroupFromUser(groupInUser.userName,groupInUser.groupId);
   }
 }

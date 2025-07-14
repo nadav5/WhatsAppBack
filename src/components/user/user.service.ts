@@ -1,6 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import { UserRO } from './ro/user.ro';
 
@@ -11,12 +15,9 @@ export class UserService {
     private userModel: Model<UserDocument>,
   ) {}
 
-
-
   public async createUser(userName: string, password: string): Promise<User> {
     const existingUser = await this.userModel.findOne({ userName });
     if (existingUser) {
-      //throw new Error('Username already exists');
       throw new ConflictException('Username already exists');
     }
 
@@ -30,35 +31,35 @@ export class UserService {
     return newUser.save();
   }
 
-
-
-
   async getAllUsers(): Promise<User[]> {
     return this.userModel.find().select('-password').exec();
   }
 
   async getUserByUserName(userName: string): Promise<User> {
-    const user = await this.userModel.findOne({ userName }, {password: 0}).select('-password').exec();
-    if (!user){
-        //throw new Error('Not found user')
-        throw new NotFoundException('Not found user');
+    const user = await this.userModel
+      .findOne({ userName }, { password: 0 })
+      .select('-password')
+      .exec();
+    if (!user) {
+      throw new NotFoundException('Not found user');
     }
     return user;
   }
 
-
-
-  async addContactToUser(userName: string, contactUserName: string): Promise<User> {
+  async addContactToUser(
+    userName: string,
+    contactUserName: string,
+  ): Promise<User> {
     const user = await this.userModel.findOne({ userName }).exec();
-    const contact = await this.userModel.findOne({ userName: contactUserName }).exec();
+    const contact = await this.userModel
+      .findOne({ userName: contactUserName })
+      .exec();
 
     if (!user || !contact) {
-      //throw new Error('User or contact not found');
-      throw new NotFoundException('User or contact not found')
+      throw new NotFoundException('User or contact not found');
     }
 
     if (user.contacts.includes(contact.userName)) {
-      //throw new Error('Contact already added');
       throw new ConflictException('Contact already added');
     }
 
@@ -66,61 +67,98 @@ export class UserService {
     return user.save();
   }
 
-
-  async removeContactFromUser(userName: string, contactUserName: string): Promise<User> {
+  async removeContactFromUser(
+    userName: string,
+    contactUserName: string,
+  ): Promise<User> {
     const user = await this.userModel.findOne({ userName }).exec();
-    const contact = await this.userModel.findOne({ userName: contactUserName }).exec();
+    const contact = await this.userModel
+      .findOne({ userName: contactUserName })
+      .exec();
 
     if (!user || !contact) {
-      //throw new Error('User or contact not found');
       throw new NotFoundException('User or contact not found');
     }
 
     if (!user.contacts.includes(contact.userName)) {
-      //throw new Error('User not in contact ');
       throw new NotFoundException('User not in contact');
     }
 
-    user.contacts = user.contacts.filter(c => c !== contact.userName);
+    user.contacts = user.contacts.filter((c) => c !== contact.userName);
     return user.save();
   }
 
-  async updateUserPassword(userName: string, newPassword: string): Promise<User> {
-  const user = await this.userModel.findOne({ userName }).exec();
+  async updateUserPassword(
+    userName: string,
+    newPassword: string,
+  ): Promise<User> {
+    const user = await this.userModel.findOne({ userName }).exec();
 
-  if (!user) {
-    //throw new Error('User not found');
-    throw new NotFoundException('User not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.password = newPassword;
+    return user.save();
   }
 
-  user.password = newPassword;
-  return user.save();
-}
+  async deleteUser(userName: string): Promise<{ deleted: boolean }> {
+    const result = await this.userModel.deleteOne({ userName }).exec();
 
-async deleteUser(userName: string): Promise<{ deleted: boolean }> {
-  const result = await this.userModel.deleteOne({ userName }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException('User not found or already deleted');
+    }
 
-  if (result.deletedCount === 0) {
-    //throw new Error('User not found or already deleted');
-    throw new NotFoundException('User not found or already deleted');
+    return { deleted: true };
   }
 
-  return { deleted: true };
-}
+  public async login(userName: string, password: string): Promise<UserRO> {
+    const user = await this.userModel.findOne({ userName }).exec();
 
-public async login(userName: string, password: string): Promise<UserRO> {
-  const user = await this.userModel.findOne({ userName }).exec();
+    if (!user) {
+      return { success: false };
+    }
 
-  if (!user) {
-    return { success: false };
+    if (user.password !== password) {
+      return { success: false };
+    }
+
+    return { success: true, user: user.userName };
   }
 
-  if (user.password !== password) {
-    return { success: false };
+  async addGroupToUser(userName: string, chatId: string): Promise<User> {
+    const user = await this.userModel.findOne({ userName }).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const groupObjectId = new mongoose.Types.ObjectId(chatId);
+
+    if (user.chats.some((g) => g.equals(groupObjectId))) {
+      throw new ConflictException('Group already added');
+    }
+    user.chats.push(groupObjectId);
+    return user.save();
   }
 
-  return { success: true, user: user.userName };
-}
 
 
+  async removeGroupFromUser(userName: string, chatId: string): Promise<User> {
+    const user = await this.userModel.findOne({ userName }).exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const groupObjectId = new mongoose.Types.ObjectId(chatId);
+    const exists = user.chats.some(
+      (g) => g.toString() === groupObjectId.toString(),
+    );
+
+    if (!exists) {
+      throw new NotFoundException('Group not found in user groups');
+    }
+    user.chats = user.chats.filter(
+      (g) => g.toString() !== groupObjectId.toString(),
+    );
+    return user.save();
+  }
 }
