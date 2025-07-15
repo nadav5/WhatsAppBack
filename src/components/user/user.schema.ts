@@ -15,7 +15,7 @@ export class User {
   @Prop({ type: [mongoose.Types.ObjectId], ref: 'Chat' })
   chats: mongoose.Types.ObjectId[];
 
-  @Prop({ type: [{ type: [String] }], default: [] })
+  @Prop({ type: [String] , default: [] })
   contacts: string[];
 }
 
