@@ -17,11 +17,13 @@ export class ChatService {
 
   public async createChat(
     name: string,
+    description: string, 
     isGroup: boolean,
     members: string[],
   ): Promise<Chat> {
     const newChat = new this.chatModel({
       name,
+      description,
       isGroup,
       members,
       createdAt: new Date(),

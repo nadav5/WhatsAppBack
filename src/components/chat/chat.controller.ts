@@ -23,8 +23,8 @@ export class ChatController {
 
   @Post()
   async createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
-    const { name, isGroup, members } = createChatDto;
-    return this.chatService.createChat(name, isGroup, members);
+    const { name, description,isGroup, members } = createChatDto;
+    return this.chatService.createChat(name, description,isGroup, members);
   }
 
   @Get('by-user/:userName')

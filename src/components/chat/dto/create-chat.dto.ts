@@ -5,6 +5,9 @@ export class CreateChatDto {
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  description: string;
+
   @IsBoolean()
   isGroup: boolean;
 
