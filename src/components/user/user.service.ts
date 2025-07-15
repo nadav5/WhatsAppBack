@@ -173,4 +173,17 @@ export class UserService {
     user.chats = user.chats.filter((g) => !g.equals(chatObjectId));
     return user.save();
   }
+
+  public async getAvailableUsers(userName: string): Promise<User[]>{
+    const currentUser = await this.userModel.findOne({ userName }).exec();
+    if(!currentUser){
+      throw new NotFoundException('User not found');
+    }
+
+    const allUsers = await this.userModel.find({ userName: {$ne: userName} }).exec();
+    const availableUsers = allUsers.filter(
+      (user) => !currentUser.contacts.includes(user.userName),
+    );
+    return availableUsers;
+  }
 }

@@ -89,4 +89,9 @@ export class UserController {
   public async removeGroupFromUser(@Body() chatInUser:ChatInUser): Promise<User>{
     return this.userService.removeGroupFromUser(chatInUser.userName,chatInUser.chatId);
   }
+
+  @Get('available/:userName')
+  public async getAvailableUsers(@Param('userName') userName: string){
+    return this.userService.getAvailableUsers(userName);
+  }
 }
