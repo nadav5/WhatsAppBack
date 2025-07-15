@@ -17,7 +17,7 @@ export class ChatService {
 
   public async createChat(
     name: string,
-    description: string, 
+    description: string,
     isGroup: boolean,
     members: string[],
   ): Promise<Chat> {
@@ -67,7 +67,9 @@ export class ChatService {
     }
 
     if (!chat.isGroup) {
-      throw new BadRequestException('Cannot remove members from a private chat');
+      throw new BadRequestException(
+        'Cannot remove members from a private chat',
+      );
     }
 
     if (!chat.members.includes(userName)) {
@@ -96,5 +98,27 @@ export class ChatService {
 
   public async getAllChats(): Promise<Chat[]> {
     return this.chatModel.find().exec();
+  }
+
+  public async findOrCreatePrivateChat(
+    user1: string,
+    user2: string,
+  ): Promise<Chat> {
+    let chat = await this.chatModel.findOne({
+      isGroup: false,
+      members: { $all: [user1, user2], $size: 2 },
+    });
+
+    if (!chat) {
+      chat = new this.chatModel({
+        name: '',
+        description: '',
+        isGroup: false,
+        members: [user1, user2],
+        createdAt: new Date(),
+      });
+      await chat.save();
+    }
+    return chat;
   }
 }

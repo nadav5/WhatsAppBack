@@ -23,8 +23,8 @@ export class ChatController {
 
   @Post()
   async createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
-    const { name, description,isGroup, members } = createChatDto;
-    return this.chatService.createChat(name, description,isGroup, members);
+    const { name, description, isGroup, members } = createChatDto;
+    return this.chatService.createChat(name, description, isGroup, members);
   }
 
   @Get('by-user/:userName')
@@ -63,5 +63,12 @@ export class ChatController {
   @Get(':chatId')
   async getChatById(@Param('chatId') chatId: string): Promise<Chat> {
     return this.chatService.getChatById(chatId);
+  }
+
+  @Post('private')
+  public async getOrCreatePrivateChat(
+    @Body() body: { user1: string; user2: string },
+  ): Promise<Chat> {
+    return this.chatService.findOrCreatePrivateChat(body.user1, body.user2);
   }
 }

@@ -129,50 +129,6 @@ export class UserService {
     return { success: true, user: user.userName };
   }
 
-  public async addGroupToUser(userName: string, chatId: string): Promise<User> {
-    const user = await this.userModel.findOne({ userName }).exec();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const chat = await this.chatModel.findById(chatId).exec();
-    if (!chat) {
-      throw new NotFoundException('Chat not found');
-    }
-
-    const chatObjectId = new mongoose.Types.ObjectId(chatId);
-    if (user.chats.some((g) => g.equals(chatObjectId))) {
-      throw new ConflictException('Chat already added');
-    }
-
-    user.chats.push(chatObjectId);
-    return user.save();
-  }
-
-  public async removeGroupFromUser(
-    userName: string,
-    chatId: string,
-  ): Promise<User> {
-    const user = await this.userModel.findOne({ userName }).exec();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const chat = await this.chatModel.findById(chatId).exec();
-    if (!chat) {
-      throw new NotFoundException('Chat not found');
-    }
-
-    const chatObjectId = new mongoose.Types.ObjectId(chatId);
-    const exists = user.chats.some((g) => g.equals(chatObjectId));
-
-    if (!exists) {
-      throw new NotFoundException('Chat not found in user chats');
-    }
-
-    user.chats = user.chats.filter((g) => !g.equals(chatObjectId));
-    return user.save();
-  }
 
   public async getAvailableUsers(userName: string): Promise<User[]>{
     const currentUser = await this.userModel.findOne({ userName }).exec();
