@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type MessageDocument = Message & Document;
 
-@Schema({timestamps: true})
+@Schema()
 export class Message {
   @Prop({ required: true })
   content: string;
@@ -19,3 +19,4 @@ export class Message {
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
+MessageSchema.index({ timestamp: 1 }, { expireAfterSeconds: 43200  });
