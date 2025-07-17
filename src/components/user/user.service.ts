@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import {
   ConflictException,
   Injectable,
@@ -24,9 +25,12 @@ export class UserService {
       throw new ConflictException('Username already exists');
     }
 
+    const saltRounds: number = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     const newUser = new this.userModel({
       userName,
-      password,
+      password: hashedPassword,
       contacts: [],
       groups: [],
     });
@@ -101,7 +105,9 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    user.password = newPassword;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    user.password = hashedPassword;
     return user.save();
   }
 
@@ -122,21 +128,23 @@ export class UserService {
       return { success: false };
     }
 
-    if (user.password !== password) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return { success: false };
     }
 
     return { success: true, user: user.userName };
   }
 
-
-  public async getAvailableUsers(userName: string): Promise<User[]>{
+  public async getAvailableUsers(userName: string): Promise<User[]> {
     const currentUser = await this.userModel.findOne({ userName }).exec();
-    if(!currentUser){
+    if (!currentUser) {
       throw new NotFoundException('User not found');
     }
 
-    const allUsers = await this.userModel.find({ userName: {$ne: userName} }).exec();
+    const allUsers = await this.userModel
+      .find({ userName: { $ne: userName } })
+      .exec();
     const availableUsers = allUsers.filter(
       (user) => !currentUser.contacts.includes(user.userName),
     );
