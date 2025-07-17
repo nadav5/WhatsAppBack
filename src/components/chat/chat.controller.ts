@@ -33,22 +33,20 @@ export class ChatController {
   ): Promise<Chat[]> {
     return this.chatService.getAllChatsForUser(userName);
   }
-
-  @Put(':chatId/add-member')
-  async addMemberToGroup(
-    @Param('chatId') chatId: string,
+  @Post('add-member')
+  async addMemberToChat(
     @Body() updateMembersDto: UpdateMembersDto,
   ): Promise<Chat> {
-    return this.chatService.addMemberToGroup(chatId, updateMembersDto.userName);
+    const { chatId, userName } = updateMembersDto;
+    return this.chatService.addMemberToChat(chatId, userName);
   }
 
-  @Put(':chatId/remove-member')
+  @Post('add-member')
   async removeMemberFromGroup(
-    @Param('chatId') chatId: string,
     @Body() updateMembersDto: UpdateMembersDto,
   ): Promise<Chat> {
     return this.chatService.removeMemberFromGroup(
-      chatId,
+      updateMembersDto.chatId,
       updateMembersDto.userName,
     );
   }

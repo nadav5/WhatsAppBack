@@ -36,7 +36,7 @@ export class ChatService {
     return this.chatModel.find({ members: userName }).exec();
   }
 
-  public async addMemberToGroup(
+  public async addMemberToChat(
     chatId: string,
     userName: string,
   ): Promise<Chat> {
