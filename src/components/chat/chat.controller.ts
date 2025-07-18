@@ -41,11 +41,11 @@ export class ChatController {
     return this.chatService.addMemberToChat(chatId, userName);
   }
 
-  @Post('add-member')
-  async removeMemberFromGroup(
+  @Put('remove-member')
+  async removeMemberFromChat(
     @Body() updateMembersDto: UpdateMembersDto,
   ): Promise<Chat> {
-    return this.chatService.removeMemberFromGroup(
+    return this.chatService.removeMemberFromChat(
       updateMembersDto.chatId,
       updateMembersDto.userName,
     );

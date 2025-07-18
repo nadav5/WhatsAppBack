@@ -57,7 +57,7 @@ export class ChatService {
     return chat.save();
   }
 
-  public async removeMemberFromGroup(
+  public async removeMemberFromChat(
     chatId: string,
     userName: string,
   ): Promise<Chat> {
