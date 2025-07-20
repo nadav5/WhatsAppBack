@@ -21,46 +21,92 @@ export class ChatGateway
 {
   @WebSocketServer()
   public server: Server;
-  private connectedUsers: { [userName: string]: string } = {}; // username => socketId
 
+  private connectedUsers: { [userName: string]: string } = {}; 
+  private chatRooms: { [chatId: string]: Set<string> } = {};  
 
   afterInit(server: Server) {
     console.log('Socket server initialized');
   }
 
   handleConnection(client: Socket) {
-  const userName = client.handshake.query.userName as string;
+    const userName = client.handshake.query.userName as string;
 
-  if (userName) {
-    this.connectedUsers[userName] = client.id;
-    console.log(`User ${userName} connected with socket ${client.id}`);
+    if (userName) {
+      this.connectedUsers[userName] = client.id;
+      console.log(`User ${userName} connected with socket ${client.id}`);
 
-    this.server.emit('update_active_users', Object.keys(this.connectedUsers));
-  } else {
-    console.log(`Client connected without userName: ${client.id}`);
+      this.server.emit('update_active_users', Object.keys(this.connectedUsers));
+    } else {
+      console.log(`Client connected without userName: ${client.id}`);
+    }
+
+    client.on('join_chat', (chatId) => {
+      client.join(chatId);
+      console.log(`Client ${client.id} joined chat ${chatId}`);
+
+      const userName = Object.keys(this.connectedUsers).find(
+        (key) => this.connectedUsers[key] === client.id,
+      );
+
+      if (userName) {
+        for (const roomId in this.chatRooms) {
+          if (this.chatRooms[roomId].has(userName)) {
+            this.chatRooms[roomId].delete(userName);
+            const activeUsersInOldChat = Array.from(this.chatRooms[roomId]);
+            this.server.to(roomId).emit('update_active_users', activeUsersInOldChat);
+          }
+        }
+
+        // Add user to new chat room
+        if (!this.chatRooms[chatId]) {
+          this.chatRooms[chatId] = new Set();
+        }
+        this.chatRooms[chatId].add(userName);
+
+        const activeUsersInChat = Array.from(this.chatRooms[chatId]);
+        this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+      }
+    });
+
+    // Event: leave_chat
+    client.on('leave_chat', (chatId) => {
+      const userName = Object.keys(this.connectedUsers).find(
+        (key) => this.connectedUsers[key] === client.id,
+      );
+
+      if (userName && this.chatRooms[chatId]) {
+        this.chatRooms[chatId].delete(userName);
+        console.log(`User ${userName} left chat ${chatId}`);
+
+        const activeUsersInChat = Array.from(this.chatRooms[chatId]);
+        this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+      }
+    });
   }
-
-  client.on('join_chat', (chatId) => {
-    client.join(chatId);
-    console.log(`Client ${client.id} joined chat ${chatId}`);
-  });
-}
 
   handleDisconnect(client: Socket) {
-  const userName = Object.keys(this.connectedUsers).find(
-    (key) => this.connectedUsers[key] === client.id
-  );
+    const userName = Object.keys(this.connectedUsers).find(
+      (key) => this.connectedUsers[key] === client.id,
+    );
 
-  if (userName) {
-    delete this.connectedUsers[userName];
-    console.log(`User ${userName} disconnected`);
+    if (userName) {
+      delete this.connectedUsers[userName];
+      console.log(`User ${userName} disconnected`);
 
-    this.server.emit('update_active_users', Object.keys(this.connectedUsers));
-  } else {
-    console.log(`Unknown client disconnected: ${client.id}`);
+      for (const chatId in this.chatRooms) {
+        if (this.chatRooms[chatId].has(userName)) {
+          this.chatRooms[chatId].delete(userName);
+          const activeUsersInChat = Array.from(this.chatRooms[chatId]);
+          this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+        }
+      }
+
+      this.server.emit('update_active_users', Object.keys(this.connectedUsers));
+    } else {
+      console.log(`Unknown client disconnected: ${client.id}`);
+    }
   }
-}
-
 
   @SubscribeMessage('send_message')
   handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
