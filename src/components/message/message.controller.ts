@@ -10,9 +10,10 @@ import {
 import { MessageService } from './message.service';
 import { Message } from './message.schema';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { subscribe } from 'diagnostics_channel';
-import { setInterval } from 'timers/promises';
+import { setInterval, setTimeout } from 'timers/promises';
+import { error, log } from 'console';
 
 @Controller('messages')
 export class MessageController {
@@ -57,6 +58,4 @@ export class MessageController {
   ): Promise<Message> {
     return this.messageService.getLastMessageOfChat(chatId);
   }
-
-
 }

@@ -30,7 +30,7 @@ export class MessageService {
       throw new NotFoundException('Chat not found');
     }
 
-    if (!chat.members.includes(senderUserName)) {
+    if (!chat.members.includes(senderUserName) && senderUserName !== 'System') {
       throw new ForbiddenException('User is not a member of this chat');
     }
 
