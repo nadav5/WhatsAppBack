@@ -10,6 +10,9 @@ import {
 import { MessageService } from './message.service';
 import { Message } from './message.schema';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { Observable } from 'rxjs';
+import { subscribe } from 'diagnostics_channel';
+import { setInterval } from 'timers/promises';
 
 @Controller('messages')
 export class MessageController {
@@ -55,10 +58,5 @@ export class MessageController {
     return this.messageService.getLastMessageOfChat(chatId);
   }
 
-  // @Delete('by-chat/:chatId')
-  // public async deleteMessagesByChatId(
-  //   @Param('chatId') chatId: string,
-  // ): Promise<{ deletedCount: number }> {
-  //   return this.messageService.deleteMessagesByChatId(chatId);
-  // }
+
 }

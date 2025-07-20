@@ -95,11 +95,5 @@ export class MessageService {
     return lastMessage;
   }
 
-  // public async deleteMessagesByChatId(chatId: string): Promise<{ deletedCount: number }> {
-  //   const result = await this.messageModel.deleteMany({ chatId }).exec();
-  //   if (result.deletedCount === 0) {
-  //     throw new NotFoundException('No messages found for this chat.');
-  //   }
-  //   return { deletedCount: result.deletedCount };
-  // }
+  
 }
