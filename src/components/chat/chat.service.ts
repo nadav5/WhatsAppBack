@@ -7,12 +7,15 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Chat, ChatDocument } from './chat.schema';
+import { Message, MessageDocument } from '../message/message.schema';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectModel(Chat.name)
     private chatModel: Model<ChatDocument>,
+    @InjectModel(Message.name)
+    private messageModel: Model<MessageDocument>,
   ) {}
 
   public async createChat(
@@ -85,6 +88,9 @@ export class ChatService {
     if (result.deletedCount === 0) {
       throw new NotFoundException('Chat not found or already deleted');
     }
+
+    await this.messageModel.deleteMany({ chatId }).exec();
+
     return { deleted: true };
   }
 

@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { MessageService } from './message.service';
 import { Message } from './message.schema';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -7,13 +15,15 @@ import { CreateMessageDto } from './dto/create-message.dto';
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
-
-  
   @Post()
   public async createMessage(
-    @Body() createMessageDto: CreateMessageDto
+    @Body() createMessageDto: CreateMessageDto,
   ): Promise<Message> {
-    return this.messageService.createMessage(createMessageDto.chatId, createMessageDto.senderUserName, createMessageDto.content);
+    return this.messageService.createMessage(
+      createMessageDto.chatId,
+      createMessageDto.senderUserName,
+      createMessageDto.content,
+    );
   }
 
   @Get('by-chat/:chatId')
@@ -45,5 +55,10 @@ export class MessageController {
     return this.messageService.getLastMessageOfChat(chatId);
   }
 
-  
+  // @Delete('by-chat/:chatId')
+  // public async deleteMessagesByChatId(
+  //   @Param('chatId') chatId: string,
+  // ): Promise<{ deletedCount: number }> {
+  //   return this.messageService.deleteMessagesByChatId(chatId);
+  // }
 }

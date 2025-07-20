@@ -17,24 +17,24 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get()
-  async getAllChats(): Promise<Chat[]> {
+  public async getAllChats(): Promise<Chat[]> {
     return this.chatService.getAllChats();
   }
 
   @Post()
-  async createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
+  public async createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
     const { name, description, isGroup, members } = createChatDto;
     return this.chatService.createChat(name, description, isGroup, members);
   }
 
   @Get('by-user/:userName')
-  async getAllChatsForUser(
+  public async getAllChatsForUser(
     @Param('userName') userName: string,
   ): Promise<Chat[]> {
     return this.chatService.getAllChatsForUser(userName);
   }
   @Post('add-member')
-  async addMemberToChat(
+  public async addMemberToChat(
     @Body() updateMembersDto: UpdateMembersDto,
   ): Promise<Chat> {
     const { chatId, userName } = updateMembersDto;
@@ -42,7 +42,7 @@ export class ChatController {
   }
 
   @Put('remove-member')
-  async removeMemberFromChat(
+  public async removeMemberFromChat(
     @Body() updateMembersDto: UpdateMembersDto,
   ): Promise<Chat> {
     return this.chatService.removeMemberFromChat(
@@ -52,14 +52,14 @@ export class ChatController {
   }
 
   @Delete(':chatId')
-  async deleteChat(
+  public async deleteChat(
     @Param('chatId') chatId: string,
   ): Promise<{ deleted: boolean }> {
     return this.chatService.deleteChat(chatId);
   }
 
   @Get(':chatId')
-  async getChatById(@Param('chatId') chatId: string): Promise<Chat> {
+  public async getChatById(@Param('chatId') chatId: string): Promise<Chat> {
     return this.chatService.getChatById(chatId);
   }
 
