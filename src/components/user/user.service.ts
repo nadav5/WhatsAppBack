@@ -38,11 +38,11 @@ export class UserService {
     return newUser.save();
   }
 
-  async getAllUsers(): Promise<User[]> {
+  public async getAllUsers(): Promise<User[]> {
     return this.userModel.find().select('-password').exec();
   }
 
-  async getUserByUserName(userName: string): Promise<User> {
+  public async getUserByUserName(userName: string): Promise<User> {
     const user = await this.userModel
       .findOne({ userName }, { password: 0 })
       .select('-password')
@@ -53,7 +53,7 @@ export class UserService {
     return user;
   }
 
-  async addContactToUser(
+  public async addContactToUser(
     userName: string,
     contactUserName: string,
   ): Promise<User> {
@@ -74,7 +74,7 @@ export class UserService {
     return user.save();
   }
 
-  async removeContactFromUser(
+  public async removeContactFromUser(
     userName: string,
     contactUserName: string,
   ): Promise<User> {
@@ -95,7 +95,7 @@ export class UserService {
     return user.save();
   }
 
-  async updateUserPassword(
+  public async updateUserPassword(
     userName: string,
     newPassword: string,
   ): Promise<User> {
@@ -111,7 +111,7 @@ export class UserService {
     return user.save();
   }
 
-  async deleteUser(userName: string): Promise<{ deleted: boolean }> {
+  public async deleteUser(userName: string): Promise<{ deleted: boolean }> {
     const result = await this.userModel.deleteOne({ userName }).exec();
 
     if (result.deletedCount === 0) {

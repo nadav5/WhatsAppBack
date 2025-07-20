@@ -94,9 +94,4 @@ export class MessageService {
     }
     return lastMessage;
   }
-
 }
-
-
-
-

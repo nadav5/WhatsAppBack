@@ -81,7 +81,7 @@ export class UserController {
 
 
   @Get('available/:userName')
-  public async getAvailableUsers(@Param('userName') userName: string){
+  public async getAvailableUsers(@Param('userName') userName: string):Promise<User[]> {
     return this.userService.getAvailableUsers(userName);
   }
 }

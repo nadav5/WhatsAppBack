@@ -25,11 +25,11 @@ export class ChatGateway
   private connectedUsers: { [userName: string]: string } = {}; 
   private chatRooms: { [chatId: string]: Set<string> } = {};  
 
-  afterInit(server: Server) {
+  afterInit(server: Server): void {
     console.log('Socket server initialized');
   }
 
-  handleConnection(client: Socket) {
+  public handleConnection(client: Socket): void {
     const userName = client.handshake.query.userName as string;
 
     if (userName) {
@@ -58,7 +58,6 @@ export class ChatGateway
           }
         }
 
-        // Add user to new chat room
         if (!this.chatRooms[chatId]) {
           this.chatRooms[chatId] = new Set();
         }
@@ -69,7 +68,6 @@ export class ChatGateway
       }
     });
 
-    // Event: leave_chat
     client.on('leave_chat', (chatId) => {
       const userName = Object.keys(this.connectedUsers).find(
         (key) => this.connectedUsers[key] === client.id,
@@ -85,7 +83,7 @@ export class ChatGateway
     });
   }
 
-  handleDisconnect(client: Socket) {
+  public handleDisconnect(client: Socket):void {
     const userName = Object.keys(this.connectedUsers).find(
       (key) => this.connectedUsers[key] === client.id,
     );
@@ -109,7 +107,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('send_message')
-  handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+  public handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket):void {
     console.log(`Message from ${client.id}:`, data);
 
     this.server.to(data.chatId).emit('new_message', data);
