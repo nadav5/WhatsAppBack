@@ -48,7 +48,10 @@ export class ChatGateway
       const userName = Object.keys(this.connectedUsers).find(
         (key) => this.connectedUsers[key] === client.id,
       );
-
+      
+      if (!this.chatRooms[chatId]) {
+        this.chatRooms[chatId] = new Set();
+      }
       if (userName) {
         for (const roomId in this.chatRooms) {
           if (this.chatRooms[roomId].has(userName)) {
@@ -58,10 +61,8 @@ export class ChatGateway
           }
         }
 
-        if (!this.chatRooms[chatId]) {
-          this.chatRooms[chatId] = new Set();
-        }
         this.chatRooms[chatId].add(userName);
+        console.log(this.chatRooms);
 
         const activeUsersInChat = Array.from(this.chatRooms[chatId]);
         this.server.to(chatId).emit('update_active_users', activeUsersInChat);
