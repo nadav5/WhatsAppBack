@@ -10,7 +10,6 @@ import { Message, MessageDocument } from './message.schema';
 import { Chat, ChatDocument } from '../chat/chat.schema';
 import { resolve } from 'path';
 import { rejects } from 'assert';
-
 @Injectable()
 export class MessageService {
   constructor(
@@ -25,7 +24,7 @@ export class MessageService {
     senderUserName: string,
     content: string,
   ): Promise<Message> {
-    const chat = await this.chatModel.findById(chatId).exec();
+    const chat: ChatDocument | null = await this.chatModel.findById(chatId).exec();
     if (!chat) {
       throw new NotFoundException('Chat not found');
     }
@@ -34,7 +33,7 @@ export class MessageService {
       throw new ForbiddenException('User is not a member of this chat');
     }
 
-    const newMessage = new this.messageModel({
+    const newMessage: MessageDocument = new this.messageModel({
       chatId,
       sender: senderUserName,
       content,
@@ -45,7 +44,7 @@ export class MessageService {
   }
 
   public async getMessagesByChatId(chatId: string): Promise<Message[]> {
-    const chat = await this.chatModel.findById(chatId).exec();
+    const chat: ChatDocument | null = await this.chatModel.findById(chatId).exec();
     if (!chat) {
       throw new NotFoundException('Chat not found');
     }
@@ -53,7 +52,7 @@ export class MessageService {
   }
 
   public async getMessageById(messageId: string): Promise<Message> {
-    const message = await this.messageModel.findById(messageId).exec();
+    const message: Message | null = await this.messageModel.findById(messageId).lean().exec();
     if (!message) {
       throw new NotFoundException('Message not found');
     }
@@ -64,7 +63,7 @@ export class MessageService {
     messageId: string,
     senderUserName: string,
   ): Promise<{ deleted: boolean }> {
-    const message = await this.messageModel.findById(messageId).exec();
+    const message: MessageDocument | null = await this.messageModel.findById(messageId).exec();
 
     if (!message) {
       throw new NotFoundException('Message not found');
@@ -74,7 +73,7 @@ export class MessageService {
       throw new ForbiddenException('You are not the sender of this message');
     }
 
-    const result = await this.messageModel.deleteOne({ _id: messageId }).exec();
+    const result: { deletedCount?: number } = await this.messageModel.deleteOne({ _id: messageId }).exec();
 
     if (result.deletedCount === 0) {
       throw new BadRequestException('Failed to delete message');
@@ -84,7 +83,7 @@ export class MessageService {
   }
 
   async getLastMessageOfChat(chatId: string): Promise<Message> {
-    const lastMessage = await this.messageModel
+    const lastMessage: Message | null = await this.messageModel
       .findOne({ chatId })
       .sort({ timestamp: -1 })
       .exec();
@@ -94,6 +93,4 @@ export class MessageService {
     }
     return lastMessage;
   }
-
-  
 }

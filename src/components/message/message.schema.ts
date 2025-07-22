@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { STORAGE_KEYS } from '../../common/constants/constants';
 import { Document, Types } from 'mongoose';
 
 export type MessageDocument = Message & Document;
@@ -19,4 +20,4 @@ export class Message {
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
-MessageSchema.index({ timestamp: 1 }, { expireAfterSeconds: 43200  });
+MessageSchema.index({ timestamp: 1 }, { expireAfterSeconds: STORAGE_KEYS.HOURS_TO_SECONDS_12  });

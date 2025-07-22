@@ -9,7 +9,6 @@ import mongoose, { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
 import { UserRO } from './ro/user.ro';
 import { Chat, ChatDocument } from '../chat/chat.schema';
-
 @Injectable()
 export class UserService {
   constructor(
@@ -20,15 +19,15 @@ export class UserService {
   ) {}
 
   public async createUser(userName: string, password: string): Promise<User> {
-    const existingUser = await this.userModel.findOne({ userName });
+    const existingUser: UserDocument | null = await this.userModel.findOne({ userName });
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
 
     const saltRounds: number = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword: string = await bcrypt.hash(password, saltRounds);
 
-    const newUser = new this.userModel({
+    const newUser: UserDocument = new this.userModel({
       userName,
       password: hashedPassword,
       contacts: [],
@@ -43,7 +42,7 @@ export class UserService {
   }
 
   public async getUserByUserName(userName: string): Promise<User> {
-    const user = await this.userModel
+    const user: User | null = await this.userModel
       .findOne({ userName }, { password: 0 })
       .select('-password')
       .exec();
@@ -56,9 +55,9 @@ export class UserService {
   public async addContactToUser(
     userName: string,
     contactUserName: string,
-  ): Promise<User> {
-    const user = await this.userModel.findOne({ userName }).exec();
-    const contact = await this.userModel
+  ): Promise<UserDocument> {
+    const user: UserDocument | null = await this.userModel.findOne({ userName }).exec();
+    const contact: UserDocument | null = await this.userModel
       .findOne({ userName: contactUserName })
       .exec();
 
@@ -77,9 +76,9 @@ export class UserService {
   public async removeContactFromUser(
     userName: string,
     contactUserName: string,
-  ): Promise<User> {
-    const user = await this.userModel.findOne({ userName }).exec();
-    const contact = await this.userModel
+  ): Promise<UserDocument> {
+    const user: UserDocument | null = await this.userModel.findOne({ userName }).exec();
+    const contact: UserDocument | null = await this.userModel
       .findOne({ userName: contactUserName })
       .exec();
 
@@ -98,21 +97,21 @@ export class UserService {
   public async updateUserPassword(
     userName: string,
     newPassword: string,
-  ): Promise<User> {
-    const user = await this.userModel.findOne({ userName }).exec();
+  ): Promise<UserDocument> {
+    const user: UserDocument | null = await this.userModel.findOne({ userName }).exec();
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    const saltRounds: number = 10;
+    const hashedPassword: string = await bcrypt.hash(newPassword, saltRounds);
     user.password = hashedPassword;
     return user.save();
   }
 
   public async deleteUser(userName: string): Promise<{ deleted: boolean }> {
-    const result = await this.userModel.deleteOne({ userName }).exec();
+    const result: { deletedCount?: number } = await this.userModel.deleteOne({ userName }).exec();
 
     if (result.deletedCount === 0) {
       throw new NotFoundException('User not found or already deleted');
@@ -122,13 +121,13 @@ export class UserService {
   }
 
   public async login(userName: string, password: string): Promise<UserRO> {
-    const user = await this.userModel.findOne({ userName }).exec();
+    const user: UserDocument | null = await this.userModel.findOne({ userName }).exec();
 
     if (!user) {
       return { success: false };
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch: boolean = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return { success: false };
     }
@@ -137,15 +136,15 @@ export class UserService {
   }
 
   public async getAvailableUsers(userName: string): Promise<User[]> {
-    const currentUser = await this.userModel.findOne({ userName }).exec();
+    const currentUser: UserDocument | null = await this.userModel.findOne({ userName }).exec();
     if (!currentUser) {
       throw new NotFoundException('User not found');
     }
 
-    const allUsers = await this.userModel
+    const allUsers: UserDocument[] = await this.userModel
       .find({ userName: { $ne: userName } })
       .exec();
-    const availableUsers = allUsers.filter(
+    const availableUsers: User[] = allUsers.filter(
       (user) => !currentUser.contacts.includes(user.userName),
     );
     return availableUsers;
