@@ -9,6 +9,13 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { SocketConstants } from 'src/common/constants/socket-constants.constant';
+import { ChatRooms } from 'src/common/types/chat/chat-rooms.type';
+import { ConnectedUsers } from 'src/common/types/chat/connected-users.type';
+import { LeaveChatUser } from 'src/common/types/chat/leave-chat-user.type';
+import { MessagePayload } from 'src/common/types/chat/message-payload.type';
+
+
 
 @WebSocketGateway({
   cors: {
@@ -20,59 +27,58 @@ export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  public server: Server;
+  public server!: Server;
 
-  private connectedUsers: { [userName: string]: string } = {};
-  private chatRooms: { [chatId: string]: Set<string> } = {};
+  private connectedUsers: ConnectedUsers = {};
+  private chatRooms: ChatRooms = {};
 
-  afterInit(server: Server): void {
+  public afterInit(server: Server): void {
     console.log('Socket server initialized');
   }
 
   public handleConnection(client: Socket): void {
-    const userName = client.handshake.query.userName as string;
+    const userName: string = client.handshake.query.userName as string;
 
     if (userName) {
       this.connectedUsers[userName] = client.id;
       console.log(`User ${userName} connected with socket ${client.id}`);
 
-      this.server.emit('update_active_users', Object.keys(this.connectedUsers));
+      this.server.emit(SocketConstants.UPDATE_ACTIVE_USERS, Object.keys(this.connectedUsers));
     } else {
       console.log(`Client connected without userName: ${client.id}`);
     }
 
-    client.on('join_chat', (chatId) => {
+    client.on(SocketConstants.JOIN_CHAT, (chatId: string): void => {
       client.join(chatId);
       console.log(`Client ${client.id} joined chat ${chatId}`);
 
-      const userName = Object.keys(this.connectedUsers).find(
+      const userName: string | undefined = Object.keys(this.connectedUsers).find(
         (key) => this.connectedUsers[key] === client.id,
       );
 
       if (!this.chatRooms[chatId]) {
         this.chatRooms[chatId] = new Set();
       }
+
       if (userName) {
         for (const roomId in this.chatRooms) {
           if (this.chatRooms[roomId].has(userName)) {
             this.chatRooms[roomId].delete(userName);
-            const activeUsersInOldChat = Array.from(this.chatRooms[roomId]);
-            this.server
-              .to(roomId)
-              .emit('update_active_users', activeUsersInOldChat);
+            const activeUsersInOldChat: string[] = Array.from(this.chatRooms[roomId]);
+            this.server.to(roomId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInOldChat);
           }
         }
 
         this.chatRooms[chatId].add(userName);
         console.log(this.chatRooms);
 
-        const activeUsersInChat = Array.from(this.chatRooms[chatId]);
-        this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+        const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
+        this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
       }
     });
 
-    client.on('leave_chat', (chatId) => {
-      const userName = Object.keys(this.connectedUsers).find(
+    client.on(SocketConstants.LEAVE_CHAT, (chatId: string): void => {
+      const userName: string | undefined = Object.keys(this.connectedUsers).find(
         (key) => this.connectedUsers[key] === client.id,
       );
 
@@ -80,34 +86,35 @@ export class ChatGateway
         this.chatRooms[chatId].delete(userName);
         console.log(`User ${userName} left chat ${chatId}`);
 
-        const activeUsersInChat = Array.from(this.chatRooms[chatId]);
-        this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+        const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
+        this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
       }
     });
 
-    client.on('leave_chat_user', ({ chatId, userName }) => {
-  if (this.chatRooms[chatId]) {
-    this.chatRooms[chatId].delete(userName);
-    console.log(`User ${userName} removed from chat ${chatId} via socket`);
+    client.on(SocketConstants.LEAVE_CHAT_USER, (leaveChatUser: LeaveChatUser): void => {
+      const { chatId, userName } = leaveChatUser;
 
-    const socketId = this.connectedUsers[userName];
-    if (socketId) {
-      const socket = this.server.sockets.sockets.get(socketId);
-      if (socket) {
-        socket.leave(chatId);  
-        console.log(`Socket ${socketId} left room ${chatId}`);
+      if (this.chatRooms[chatId]) {
+        this.chatRooms[chatId].delete(userName);
+        console.log(`User ${userName} removed from chat ${chatId} via socket`);
+
+        const socketId: string | undefined = this.connectedUsers[userName];
+        if (socketId) {
+          const socket: Socket | undefined = this.server.sockets.sockets.get(socketId);
+          if (socket) {
+            socket.leave(chatId);
+            console.log(`Socket ${socketId} left room ${chatId}`);
+          }
+        }
+
+        const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
+        this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
       }
-    }
-
-    const activeUsersInChat = Array.from(this.chatRooms[chatId]);
-    this.server.to(chatId).emit('update_active_users', activeUsersInChat);
-  }
-});
-
+    });
   }
 
   public handleDisconnect(client: Socket): void {
-    const userName = Object.keys(this.connectedUsers).find(
+    const userName: string | undefined = Object.keys(this.connectedUsers).find(
       (key) => this.connectedUsers[key] === client.id,
     );
 
@@ -118,24 +125,23 @@ export class ChatGateway
       for (const chatId in this.chatRooms) {
         if (this.chatRooms[chatId].has(userName)) {
           this.chatRooms[chatId].delete(userName);
-          const activeUsersInChat = Array.from(this.chatRooms[chatId]);
-          this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+          const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
+          this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
         }
       }
 
-      this.server.emit('update_active_users', Object.keys(this.connectedUsers));
+      this.server.emit(SocketConstants.UPDATE_ACTIVE_USERS, Object.keys(this.connectedUsers));
     } else {
       console.log(`Unknown client disconnected: ${client.id}`);
     }
   }
 
-  @SubscribeMessage('send_message')
+  @SubscribeMessage(SocketConstants.SEND_MESSAGE)
   public handleMessage(
-    @MessageBody() data: any,
+    @MessageBody() data: MessagePayload,
     @ConnectedSocket() client: Socket,
   ): void {
     console.log(`Message from ${client.id}:`, data);
-
     this.server.to(data.chatId).emit('new_message', data);
   }
 }
