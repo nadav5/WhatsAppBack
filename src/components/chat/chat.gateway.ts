@@ -22,8 +22,8 @@ export class ChatGateway
   @WebSocketServer()
   public server: Server;
 
-  private connectedUsers: { [userName: string]: string } = {}; 
-  private chatRooms: { [chatId: string]: Set<string> } = {};  
+  private connectedUsers: { [userName: string]: string } = {};
+  private chatRooms: { [chatId: string]: Set<string> } = {};
 
   afterInit(server: Server): void {
     console.log('Socket server initialized');
@@ -48,7 +48,7 @@ export class ChatGateway
       const userName = Object.keys(this.connectedUsers).find(
         (key) => this.connectedUsers[key] === client.id,
       );
-      
+
       if (!this.chatRooms[chatId]) {
         this.chatRooms[chatId] = new Set();
       }
@@ -57,7 +57,9 @@ export class ChatGateway
           if (this.chatRooms[roomId].has(userName)) {
             this.chatRooms[roomId].delete(userName);
             const activeUsersInOldChat = Array.from(this.chatRooms[roomId]);
-            this.server.to(roomId).emit('update_active_users', activeUsersInOldChat);
+            this.server
+              .to(roomId)
+              .emit('update_active_users', activeUsersInOldChat);
           }
         }
 
@@ -82,9 +84,29 @@ export class ChatGateway
         this.server.to(chatId).emit('update_active_users', activeUsersInChat);
       }
     });
+
+    client.on('leave_chat_user', ({ chatId, userName }) => {
+  if (this.chatRooms[chatId]) {
+    this.chatRooms[chatId].delete(userName);
+    console.log(`User ${userName} removed from chat ${chatId} via socket`);
+
+    const socketId = this.connectedUsers[userName];
+    if (socketId) {
+      const socket = this.server.sockets.sockets.get(socketId);
+      if (socket) {
+        socket.leave(chatId);  
+        console.log(`Socket ${socketId} left room ${chatId}`);
+      }
+    }
+
+    const activeUsersInChat = Array.from(this.chatRooms[chatId]);
+    this.server.to(chatId).emit('update_active_users', activeUsersInChat);
+  }
+});
+
   }
 
-  public handleDisconnect(client: Socket):void {
+  public handleDisconnect(client: Socket): void {
     const userName = Object.keys(this.connectedUsers).find(
       (key) => this.connectedUsers[key] === client.id,
     );
@@ -108,7 +130,10 @@ export class ChatGateway
   }
 
   @SubscribeMessage('send_message')
-  public handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket):void {
+  public handleMessage(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): void {
     console.log(`Message from ${client.id}:`, data);
 
     this.server.to(data.chatId).emit('new_message', data);
