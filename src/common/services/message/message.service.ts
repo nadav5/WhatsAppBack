@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Message, MessageDocument } from './message.schema';
-import { Chat, ChatDocument } from '../chat/chat.schema';
+import { Message, MessageDocument } from './../../schema/message/message.schema';
+import { Chat, ChatDocument } from '../../schema/chat/chat.schema';
 import { resolve } from 'path';
 import { rejects } from 'assert';
 @Injectable()

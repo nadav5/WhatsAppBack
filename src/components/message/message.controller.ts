@@ -7,9 +7,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { MessageService } from './message.service';
-import { Message } from './message.schema';
-import { CreateMessageDto } from './dto/create-message.dto';
+import { MessageService } from '../../common/services/message/message.service';
+import { Message } from '../../common/schema/message/message.schema';
+import { CreateMessageDto } from '../../common/dto/message/create-message.dto';
 import { Observable, Subject } from 'rxjs';
 import { subscribe } from 'diagnostics_channel';
 import { setInterval, setTimeout } from 'timers/promises';

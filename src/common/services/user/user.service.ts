@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { User, UserDocument } from './user.schema';
-import { UserRO } from './ro/user.ro';
-import { Chat, ChatDocument } from '../chat/chat.schema';
+import { User, UserDocument } from '../../schema/user/user.schema';
+import { UserRO } from '../../ro/user/user.ro';
+import { Chat, ChatDocument } from '../../schema/chat/chat.schema';
 @Injectable()
 export class UserService {
   constructor(

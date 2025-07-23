@@ -7,10 +7,10 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ChatService } from './chat.service';
-import { Chat } from './chat.schema';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { UpdateMembersDto } from './dto/update-members.dto';
+import { ChatService } from '../../common/services/chat/chat.service';
+import { Chat } from '../../common/schema/chat/chat.schema';
+import { CreateChatDto } from '../../common/dto/chat/create-chat.dto';
+import { UpdateMembersDto } from '../../common/dto/chat/update-members.dto';
 
 @Controller('chats')
 export class ChatController {

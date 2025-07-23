@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { STORAGE_KEYS } from '../../common/constants/constants';
+import { STORAGE_KEYS } from '../../constants/constants';
 import { Document, Types } from 'mongoose';
 
 export type MessageDocument = Message & Document;

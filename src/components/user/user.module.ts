@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from '../../common/services/user/user.service';
 import { UserController } from './user.controller';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './user.schema';
+import { User, UserSchema } from '../../common/schema/user/user.schema';
 import { ChatModule } from '../chat/chat.module';
 
 @Module({

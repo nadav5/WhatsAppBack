@@ -7,12 +7,12 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { User } from './user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
-import { AddContactDto } from './dto/add-contact.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
-import { UserRO } from './ro/user.ro';
+import { UserService } from '../../common/services/user/user.service';
+import { User } from '../../common/schema/user/user.schema';
+import { CreateUserDto } from '../../common/dto/user/create-user.dto';
+import { AddContactDto } from '../../common/dto/user/add-contact.dto';
+import { UpdatePasswordDto } from '../../common/dto/user/update-password.dto';
+import { UserRO } from '../../common/ro/user/user.ro';
 
 
 @Controller('users')
