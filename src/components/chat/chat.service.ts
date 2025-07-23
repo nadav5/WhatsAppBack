@@ -116,8 +116,8 @@ export class ChatService {
 
     if (!chat) {
       chat = new this.chatModel({
-        name: '',
-        description: '',
+        // name: '',
+        // description: '',
         isGroup: false,
         members: [user1, user2],
         createdAt: new Date(),
