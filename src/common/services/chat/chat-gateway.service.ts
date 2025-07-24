@@ -16,9 +16,6 @@ export class ChatGatewayService {
     this.server = server;
   }
 
-
-
-
   public handleConnection(client: Socket): void {
     const userName: string = client.handshake.query.userName as string;
 
@@ -30,8 +27,6 @@ export class ChatGatewayService {
       );
     }
 
-
-
     client.on(SocketConstants.JOIN_CHAT, (chatId: string): void => {
       this.handleJoinChat(chatId, client);
     });
@@ -40,12 +35,13 @@ export class ChatGatewayService {
       this.handleLeaveChat(chatId, client);
     });
 
-    client.on(SocketConstants.LEAVE_CHAT_USER, (leaveChatUser: LeaveChatUser): void => {
-      this.handleLeaveChatUser(leaveChatUser);
-    });
+    client.on(
+      SocketConstants.LEAVE_CHAT_USER,
+      (leaveChatUser: LeaveChatUser): void => {
+        this.handleLeaveChatUser(leaveChatUser);
+      },
+    );
   }
-
-
 
   public handleJoinChat(chatId: string, client: Socket): void {
     client.join(chatId);
@@ -62,16 +58,20 @@ export class ChatGatewayService {
       for (const roomId in this.chatRooms) {
         if (this.chatRooms[roomId].has(userName)) {
           this.chatRooms[roomId].delete(userName);
-          const activeUsersInOldChat: string[] = Array.from(this.chatRooms[roomId]);
-          this.server.to(roomId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInOldChat);
+          const activeUsersInOldChat: string[] = Array.from(
+            this.chatRooms[roomId],
+          );
+          this.server
+            .to(roomId)
+            .emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInOldChat);
         }
       }
 
-
-
       this.chatRooms[chatId].add(userName);
       const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
-      this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
+      this.server
+        .to(chatId)
+        .emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
     }
   }
 
@@ -83,33 +83,32 @@ export class ChatGatewayService {
     if (userName && this.chatRooms[chatId]) {
       this.chatRooms[chatId].delete(userName);
       const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
-      this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
+      this.server
+        .to(chatId)
+        .emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
     }
   }
 
   public handleLeaveChatUser(leaveChatUser: LeaveChatUser): void {
-    const { chatId, userName } = leaveChatUser;
+    const { chatId, userName }: LeaveChatUser = leaveChatUser;
 
-    
     if (this.chatRooms[chatId]) {
       this.chatRooms[chatId].delete(userName);
       const socketId: string | undefined = this.connectedUsers[userName];
       if (socketId) {
-        const socket: Socket | undefined = this.server.sockets.sockets.get(socketId);
+        const socket: Socket | undefined =
+          this.server.sockets.sockets.get(socketId);
         if (socket) {
           socket.leave(chatId);
         }
       }
 
-
-
-
       const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
-      this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
+      this.server
+        .to(chatId)
+        .emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
     }
   }
-
-
 
   public handleDisconnect(client: Socket): void {
     const userName: string | undefined = Object.keys(this.connectedUsers).find(
@@ -122,8 +121,12 @@ export class ChatGatewayService {
       for (const chatId in this.chatRooms) {
         if (this.chatRooms[chatId].has(userName)) {
           this.chatRooms[chatId].delete(userName);
-          const activeUsersInChat: string[] = Array.from(this.chatRooms[chatId]);
-          this.server.to(chatId).emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
+          const activeUsersInChat: string[] = Array.from(
+            this.chatRooms[chatId],
+          );
+          this.server
+            .to(chatId)
+            .emit(SocketConstants.UPDATE_ACTIVE_USERS, activeUsersInChat);
         }
       }
 
@@ -135,6 +138,6 @@ export class ChatGatewayService {
   }
 
   public handleMessage(data: MessagePayload, client: Socket): void {
-    this.server.to(data.chatId).emit('new_message', data);
+    this.server.to(data.chatId).emit(SocketConstants.NEW_MESSAGE, data);
   }
 }
